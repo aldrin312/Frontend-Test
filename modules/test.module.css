@@ -2,3 +2,12 @@
     height: 80vh;
     background-color: aliceblue;
 }
+
+.header-container {
+  padding: 20px;
+}
+
+.input, .select, .button {
+  margin: 5px;
+  padding: 8px;
+}
