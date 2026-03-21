@@ -4,7 +4,7 @@ import styles from './test.module.css';
 
 // Your Test Starts Here
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 
 //Defining Task object
 type Task = {
@@ -13,6 +13,8 @@ type Task = {
     priority: "Low" | "Medium" | "High";
     completed: boolean;
 };
+
+const STORAGE_KEY = "tasks";
 
 //Component for prioty on list
 function PriorityBadge({ priority }: { priority: Task["priority"] }) {
@@ -69,6 +71,28 @@ export default function TaskManager(): JSX.Element {
     const [name, setName] = useState("");
     const [priority, setPriority] = useState<Task["priority"]>("Low"); //default to low
     const [error, setError] = useState("");
+
+    //Load tasks list on render
+    useEffect(() => {
+        try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            setTasks(JSON.parse(stored));
+        }
+        } catch (err) {
+            console.error("Failed to load tasks:", err);
+        }
+    }, []);
+
+    //Save task list on-change
+    useEffect(() => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        } catch (err) {
+            console.error("Failed to save tasks:", err);
+        }
+    }, [tasks]);
+
 
     //Adds new Task to the list
     const addTask = () => {
