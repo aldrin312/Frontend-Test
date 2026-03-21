@@ -72,6 +72,8 @@ export default function TaskManager(): JSX.Element {
     const [priority, setPriority] = useState<Task["priority"]>("Low"); //default to low
     const [error, setError] = useState("");
 
+    const [search, setSearch] = useState("");
+
     //Load tasks list on render
     useEffect(() => {
         try {
@@ -92,6 +94,10 @@ export default function TaskManager(): JSX.Element {
             console.error("Failed to save tasks:", err);
         }
     }, [tasks]);
+
+    const filteredTasks = tasks.filter(task =>
+        task.name.toLowerCase().includes(search.toLowerCase())
+    );
 
 
     //Adds new Task to the list
@@ -161,22 +167,37 @@ export default function TaskManager(): JSX.Element {
           </button>
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {/*Error notification if empty task name*/}
+        {error ? (
+            <p className={styles.error}>{error}</p>
+        ) : (
+            <p className={styles.error}> {"\u00A0"}</p>
+        )}        
+
+        {/*Search input row*/}
+        <input
+            className={styles.input}
+            placeholder="Search tasks..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+        />
 
         {/* Task List */}
         <ul className={styles.list}>
-          {tasks.length === 0 && (
-            <p className={styles.empty}>No tasks yet</p>
-          )}
-
-          {tasks.map(task => (
+        {filteredTasks.length === 0 ? (
+            <p className={styles.empty}>
+            {search ? "No matching tasks" : "No tasks yet"}
+            </p>
+        ) : (
+            filteredTasks.map(task => (
             <TaskItem
-              key={task.id}
-              task={task}
-              onToggle={toggleTask}
-              onDelete={deleteTask}
+                key={task.id}
+                task={task}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
             />
-          ))}
+            ))
+        )}
         </ul>
       </div>
     </div>
