@@ -4,7 +4,7 @@ import styles from './test.module.css';
 
 // Your Test Starts Here
 
-import { useState,useEffect } from "react";
+import { useState,useEffect,useRef } from "react";
 
 //Defining Task object
 type Task = {
@@ -27,13 +27,15 @@ function PriorityBadge({ priority }: { priority: Task["priority"] }) {
 
 //Task listed item component
 function TaskItem({
-  task,
-  onToggle,
-  onDelete,
+    task,
+    onToggle,
+    onDelete,
+    onEdit,
 }: {
-  task: Task;
-  onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
+    task: Task;
+    onToggle: (id: number) => void;
+    onDelete: (id: number) => void;
+    onEdit: (task: Task) => void;
 }) {
   return (
     <li className={styles.taskItem}>
@@ -52,6 +54,9 @@ function TaskItem({
 
       <div className={styles.taskRight}>
         <PriorityBadge priority={task.priority} />
+        <button className={styles.editBtn} onClick={() => onEdit(task)}>
+            ✎
+        </button>
         <button
           className={styles.deleteBtn}
           onClick={() => onDelete(task.id)}
@@ -72,7 +77,14 @@ export default function TaskManager(): JSX.Element {
     const [priority, setPriority] = useState<Task["priority"]>("Low"); //default to low
     const [error, setError] = useState("");
 
+    //search useState
     const [search, setSearch] = useState("");
+
+    //editing useStates
+    const [editingId, setEditingId] = useState<number | null>(null);
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
 
     //Load tasks list on render
     useEffect(() => {
@@ -107,17 +119,32 @@ export default function TaskManager(): JSX.Element {
             setError("Task name cannot be empty");
             return;
         }
-        //Creating new task
-        const newTask: Task = {
-            id: Date.now(),
-            name,
-            priority,
-            completed: false,
-        };
-        //Adding new task on top of the list
-        setTasks([newTask, ...tasks]);
+        if (editingId !== null) {
+            // Editing existing task
+            setTasks(prev =>
+            prev.map(t =>
+                t.id === editingId
+                ? { ...t, name, priority }
+                : t
+            )
+            );
+            setEditingId(null);
+        } else {
+            //Creating new task
+            const newTask: Task = {
+                id: Date.now(),
+                name,
+                priority,
+                completed: false,
+            };
+
+            //Adding new task on top of the list
+            setTasks([newTask, ...tasks]);
+
+        }
         //Reseting input and error
         setName("");
+        setPriority("Low");
         setError("");
     };
     //Toggle task completed state
@@ -131,74 +158,100 @@ export default function TaskManager(): JSX.Element {
         setTasks(tasks.filter(t => t.id !== id));
     };
 
+    //Edinting task
+    const startEdit = (task: Task) => {
+        setEditingId(task.id);
+        setName(task.name);
+        setPriority(task.priority);
+
+        // Set focus on the input bar when editing starts
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 0);
+    };
+
+    //Cenceling edit
+    const cancelEdit = () => {
+        setEditingId(null);
+        setName("");
+        setError("");
+    };
     
     return <div className={styles.container}>
       <div className={styles.card}>
-        <h2 className={styles.header}>Task Manager</h2>
+            <h2 className={styles.header}>Task Manager</h2>
 
-        {/* Input Row */}
-        <div className={styles.inputRow}>
-          <input
-            className={styles.input}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="What needs to be done?"
-            onKeyDown={(e) => e.key === "Enter" && addTask()}
-          />
+            {/* Input Row */}
+            <div className={styles.inputRow}>
+                <input
+                    ref={inputRef}
+                    className={styles.input}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="What needs to be done?"
+                    onKeyDown={(e) => e.key === "Enter" && addTask()}
+                />
 
-          <select
-            className={styles.select}
-            value={priority}
-            onChange={(e) =>
-              setPriority(e.target.value as Task["priority"])
-            }
-          >
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </select>
+                <select
+                    className={styles.select}
+                    value={priority}
+                    onChange={(e) =>
+                        setPriority(e.target.value as Task["priority"])
+                    }
+                >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                </select>
+            </div>
+            {/*Button Row*/}
+            <div className={styles.buttons}>
+                <button 
+                    className={styles.addBtn}
+                    onClick={addTask}
+                    disabled={!name.trim()}>
+                    {editingId !== null ? "Save" : "Add "}
+                </button>
+                {editingId !== null && (
+                    <button onClick={cancelEdit} className={styles.cancelBtn}>
+                        Cancel
+                    </button>
+                )}
+            </div>
 
-          <button
-            className={styles.addBtn}
-            onClick={addTask}
-            disabled={!name.trim()}
-          >
-            Add
-          </button>
-        </div>
+            {/*Error notification*/}
+            {error ? (
+                <p className={styles.error}>{error}</p>
+            ) : (
+                <p className={styles.error}> {"\u00A0"}</p>
+            )}        
 
-        {/*Error notification if empty task name*/}
-        {error ? (
-            <p className={styles.error}>{error}</p>
-        ) : (
-            <p className={styles.error}> {"\u00A0"}</p>
-        )}        
-
-        {/*Search input row*/}
-        <input
-            className={styles.input}
-            placeholder="Search tasks..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-        />
-
-        {/* Task List */}
-        <ul className={styles.list}>
-        {filteredTasks.length === 0 ? (
-            <p className={styles.empty}>
-            {search ? "No matching tasks" : "No tasks yet"}
-            </p>
-        ) : (
-            filteredTasks.map(task => (
-            <TaskItem
-                key={task.id}
-                task={task}
-                onToggle={toggleTask}
-                onDelete={deleteTask}
+            {/*Search input row*/}
+            <input
+                className={styles.input}
+                placeholder="Search tasks..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
             />
-            ))
-        )}
-        </ul>
-      </div>
+
+            {/* Task List */}
+            <ul className={styles.list}>
+                {filteredTasks.length === 0 ? (
+                    <p className={styles.empty}>
+                    {search ? "No matching tasks" : "No tasks yet"}
+                    </p>
+                ) : (
+                    filteredTasks.map(task => (
+                    <TaskItem
+                        key={task.id}
+                        task={task}
+                        onToggle={toggleTask}
+                        onDelete={deleteTask}
+                        onEdit={startEdit}
+                    />
+                    ))
+                )}
+            </ul>
+        </div>
     </div>
 };

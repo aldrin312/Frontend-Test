@@ -38,20 +38,6 @@
   border-radius: 8px;
 }
 
-.addBtn {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  padding: 0 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.addBtn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
 .error {
   color: red;
   margin-bottom: 8px;
@@ -102,7 +88,16 @@
   color: red;
 }
 
-/* 🎯 Priority badges */
+.editBtn{
+  background: transparent;
+  border: none;
+  color: #999;
+  cursor: pointer;
+}
+
+.editBtn:hover {
+  color: #0dde5a;
+}
 .badge {
   padding: 4px 8px;
   border-radius: 999px;
@@ -123,4 +118,38 @@
 .high {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.buttons{
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.addBtn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.addBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  background: #f3f4f6;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: #e5e7eb;
 }
