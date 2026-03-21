@@ -9,37 +9,85 @@ import { useState } from "react";
 //Defining Task object
 type Task = {
     id: number;
-    title: string;
+    name: string;
     priority: "Low" | "Medium" | "High";
     completed: boolean;
 };
+
+//Component for prioty on list
+function PriorityBadge({ priority }: { priority: Task["priority"] }) {
+  return (
+    <span className={`${styles.badge} ${styles[priority.toLowerCase()]}`}>
+      {priority}
+    </span>
+  );
+}
+
+//Task listed item component
+function TaskItem({
+  task,
+  onToggle,
+  onDelete,
+}: {
+  task: Task;
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+}) {
+  return (
+    <li className={styles.taskItem}>
+      <label className={styles.taskLeft}>
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={() => onToggle(task.id)}
+        />
+        <span
+          className={task.completed ? styles.completed : ""}
+        >
+          {task.name}
+        </span>
+      </label>
+
+      <div className={styles.taskRight}>
+        <PriorityBadge priority={task.priority} />
+        <button
+          className={styles.deleteBtn}
+          onClick={() => onDelete(task.id)}
+        >
+          ✕
+        </button>
+      </div>
+    </li>
+  );
+}
+
 
 export default function TaskManager(): JSX.Element {
 
     //Storing task using useState
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [title, setTitle] = useState("");
+    const [name, setName] = useState("");
     const [priority, setPriority] = useState<Task["priority"]>("Low"); //default to low
     const [error, setError] = useState("");
 
     //Adds new Task to the list
     const addTask = () => {
-        // Prevent empty title
-        if (!title.trim()) {
-            setError("Task title cannot be empty");
+        // Prevent empty name
+        if (!name.trim()) {
+            setError("Task name cannot be empty");
             return;
         }
         //Creating new task
         const newTask: Task = {
             id: Date.now(),
-            title,
+            name,
             priority,
             completed: false,
         };
         //Adding new task on top of the list
         setTasks([newTask, ...tasks]);
         //Reseting input and error
-        setTitle("");
+        setName("");
         setError("");
     };
     //Toggle task completed state
@@ -55,52 +103,57 @@ export default function TaskManager(): JSX.Element {
 
     
     return <div className={styles.container}>
-            <h2>Task Manager</h2>
+      <div className={styles.card}>
+        <h2 className={styles.header}>Task Manager</h2>
 
-            <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Task title"
-                onKeyDown={(e) => e.key === "Enter" && addTask()}
+        {/* Input Row */}
+        <div className={styles.inputRow}>
+          <input
+            className={styles.input}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="What needs to be done?"
+            onKeyDown={(e) => e.key === "Enter" && addTask()}
+          />
+
+          <select
+            className={styles.select}
+            value={priority}
+            onChange={(e) =>
+              setPriority(e.target.value as Task["priority"])
+            }
+          >
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+
+          <button
+            className={styles.addBtn}
+            onClick={addTask}
+            disabled={!name.trim()}
+          >
+            Add
+          </button>
+        </div>
+
+        {error && <p className={styles.error}>{error}</p>}
+
+        {/* Task List */}
+        <ul className={styles.list}>
+          {tasks.length === 0 && (
+            <p className={styles.empty}>No tasks yet</p>
+          )}
+
+          {tasks.map(task => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggle={toggleTask}
+              onDelete={deleteTask}
             />
-
-            <select
-                value={priority}
-                onChange={(e) =>
-                    setPriority(e.target.value as Task["priority"])
-                }
-            >
-                <option>Low</option>
-                <option>Medium</option>
-                <option>High</option>
-            </select>
-
-            <button onClick={addTask}>Add Task</button>
-
-            {error && <p style={{ color: "red" }}>{error}</p>}
-
-            <ul>
-                {tasks.map(task => (
-                    <li key={task.id}>
-                        <input
-                            type="checkbox"
-                            checked={task.completed}
-                            onChange={() => toggleTask(task.id)}
-                        />
-                        <span
-                            style={{
-                                textDecoration: task.completed
-                                    ? "line-through"
-                                    : "none",
-                            }}
-                        >
-                            {task.title} ({task.priority})
-                        </span>
-                        <button onClick={() => deleteTask(task.id)}>
-                            Delete
-                        </button>
-                    </li>
-                ))}
-            </ul>
-    </div>;
+          ))}
+        </ul>
+      </div>
+    </div>
 };
