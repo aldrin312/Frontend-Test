@@ -25,7 +25,6 @@
   gap: 8px;
   margin-bottom: 12px;
   flex-wrap: wrap;
-
 }
 
 .input {
@@ -36,11 +35,19 @@
   min-width: 120px;
 }
 
+.filters{
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
 .select {
   padding: 10px;
-  margin-left: 10px;
   border-radius: 8px;
   min-width: 80px;
+  flex-wrap: wrap;
+
 }
 
 .error {
