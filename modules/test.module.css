@@ -24,6 +24,8 @@
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+
 }
 
 .input {
@@ -31,11 +33,14 @@
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ddd;
+  min-width: 120px;
 }
 
 .select {
   padding: 10px;
+  margin-left: 10px;
   border-radius: 8px;
+  min-width: 80px;
 }
 
 .error {
@@ -144,10 +149,11 @@
   background: #f3f4f6;
   color: #333;
   border: 1px solid #ddd;
-  padding: 8px 16px;
+  padding: 10px 16px;
   border-radius: 8px;
-  margin-left: 8px;
-  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 14px;
+  
 }
 
 .cancelBtn:hover {

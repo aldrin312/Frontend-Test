@@ -80,6 +80,9 @@ export default function TaskManager(): JSX.Element {
     //search useState
     const [search, setSearch] = useState("");
 
+    //fileter useState
+    const [filter, setFilter] = useState<"All" | "Active" | "Completed">("All");
+
     //editing useStates
     const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -107,9 +110,16 @@ export default function TaskManager(): JSX.Element {
         }
     }, [tasks]);
 
-    const filteredTasks = tasks.filter(task =>
+    //Task Filter by iscompleted or with search input
+    const filteredTasks = tasks
+    .filter(task =>
         task.name.toLowerCase().includes(search.toLowerCase())
-    );
+    )
+    .filter(task => {
+        if (filter === "Active") return !task.completed;
+        if (filter === "Completed") return task.completed;
+        return true;
+    });
 
 
     //Adds new Task to the list
@@ -147,6 +157,7 @@ export default function TaskManager(): JSX.Element {
         setPriority("Low");
         setError("");
     };
+
     //Toggle task completed state
     const toggleTask = (id: number) => {
         setTasks(tasks.map(t =>
@@ -157,6 +168,8 @@ export default function TaskManager(): JSX.Element {
     const deleteTask = (id: number) => {
         setTasks(tasks.filter(t => t.id !== id));
     };
+
+    
 
     //Edinting task
     const startEdit = (task: Task) => {
@@ -170,7 +183,7 @@ export default function TaskManager(): JSX.Element {
         }, 0);
     };
 
-    //Cenceling edit
+    //Canceling edit
     const cancelEdit = () => {
         setEditingId(null);
         setName("");
@@ -226,13 +239,26 @@ export default function TaskManager(): JSX.Element {
                 <p className={styles.error}> {"\u00A0"}</p>
             )}        
 
-            {/*Search input row*/}
-            <input
-                className={styles.input}
-                placeholder="Search tasks..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className={styles.filters}>
+
+                {/*Search input*/}
+                <input
+                    className={styles.input}
+                    placeholder="Search tasks..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+                {/*Filter*/}
+                <select
+                    className={styles.select}
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value as "All" | "Active" | "Completed")}
+                >
+                    <option value="All">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
 
             {/* Task List */}
             <ul className={styles.list}>
